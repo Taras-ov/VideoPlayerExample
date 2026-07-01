@@ -49,23 +49,6 @@ class WorkoutDetailsViewModel @Inject constructor(
         }
     }
 
-    fun changeQuality(quality: Quality) {
-        val base = baseVideo ?: return
-
-        val url = when (quality) {
-            Quality.LOW -> base.link
-            Quality.MEDIUM -> base.link
-            Quality.HIGH -> base.link
-        }
-
-        _state.update {
-            it.copy(
-                quality = quality,
-                videoUrl = url
-            )
-        }
-    }
-
     fun setFullscreen(enabled: Boolean) {
         _state.update { it.copy(isFullscreen = enabled) }
     }

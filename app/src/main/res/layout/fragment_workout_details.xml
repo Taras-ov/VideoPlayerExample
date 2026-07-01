@@ -1,75 +1,116 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
 
     <androidx.media3.ui.PlayerView
         android:id="@+id/playerView"
         android:layout_width="0dp"
-        android:layout_height="220dp"
-        app:use_controller="true"
+        android:layout_height="0dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintDimensionRatio="16:9"
 
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:textSize="18sp"
-        android:padding="12dp"
-        app:layout_constraintTop_toBottomOf="@id/playerView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <TextView
-        android:id="@+id/description"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        app:layout_constraintTop_toBottomOf="@id/title"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <TextView
-        android:id="@+id/meta"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:padding="12dp"
-        app:layout_constraintTop_toBottomOf="@id/description"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <ImageButton
-        android:id="@+id/fullscreenBtn"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:src="@drawable/ic_fullscreen"
-        android:background="@android:color/transparent"
-        app:layout_constraintEnd_toEndOf="@id/playerView"
-        app:layout_constraintBottom_toBottomOf="@id/playerView"/>
-
-    <ImageButton
-        android:id="@+id/qualityBtn"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:src="@android:drawable/ic_menu_manage"
-        android:background="@android:color/transparent"
-        app:layout_constraintStart_toStartOf="@id/playerView"
-        app:layout_constraintBottom_toBottomOf="@id/playerView"/>
+        app:use_controller="true"
+        app:show_rewind_button="true"
+        app:show_fastforward_button="true"
+        app:show_previous_button="false"
+        app:show_next_button="false"
+        app:show_shuffle_button="false"
+        app:show_subtitle_button="false"/>
 
     <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:id="@+id/playerLoading"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="@id/playerView"
         app:layout_constraintBottom_toBottomOf="@id/playerView"
         app:layout_constraintStart_toStartOf="@id/playerView"
         app:layout_constraintEnd_toEndOf="@id/playerView"/>
+
+    <ImageButton
+        android:id="@+id/fullscreenButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_margin="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="10dp"
+        android:src="@drawable/ic_fullscreen"
+        app:layout_constraintTop_toTopOf="@id/playerView"
+        app:layout_constraintEnd_toEndOf="@id/playerView"
+        app:tint="@android:color/white" />
+
+    <ScrollView
+        android:id="@+id/contentContainer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/playerView"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="22sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/meta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"/>
+
+            <TextView
+                android:id="@+id/description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"/>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <FrameLayout
+        android:id="@+id/loadingContainer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="?attr/colorSurface"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ProgressBar
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_gravity="center"/>
+
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/errorView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:textAppearance="?attr/textAppearanceBodyLarge"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

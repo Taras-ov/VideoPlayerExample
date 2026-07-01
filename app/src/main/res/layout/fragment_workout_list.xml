@@ -20,7 +20,7 @@
             android:id="@+id/searchInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Найти тренировки"/>
+            android:hint="@string/search_workouts"/>
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.chip.ChipGroup
@@ -42,7 +42,7 @@
             style="@style/Widget.Material3.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Все"
+            android:text="@string/button_text_all"
             android:checked="true"/>
 
         <com.google.android.material.chip.Chip
@@ -50,21 +50,21 @@
             style="@style/Widget.Material3.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Training"/>
+            android:text="@string/chip_text_trainig"/>
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipLive"
             style="@style/Widget.Material3.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Live"/>
+            android:text="@string/chip_text_live"/>
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipComplex"
             style="@style/Widget.Material3.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Complex"/>
+            android:text="@string/chip_text_complex"/>
 
     </com.google.android.material.chip.ChipGroup>
 
@@ -82,7 +82,7 @@
         android:id="@+id/emptyView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Ничего не найдено"
+        android:text="@string/error_text_nothing_found"
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -93,7 +93,7 @@
         android:id="@+id/errorView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Что-то пошло не так"
+        android:text="@string/error_text_smth_was_wrong"
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"

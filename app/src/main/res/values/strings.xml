@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Video Player Example</string>
+    <string name="search_workouts">Найти тренировки</string>
+    <string name="button_text_all">Все</string>
+    <string name="chip_text_trainig">Training</string>
+    <string name="chip_text_live">Live</string>
+    <string name="chip_text_complex">Complex</string>
+    <string name="error_text_nothing_found">Ничего не найдено</string>
+    <string name="error_text_smth_was_wrong">Что-то пошло не так</string>
 </resources>

@@ -1,13 +1,15 @@
 package com.example.videoplayer.presentation.workoutDetails
 
-import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.os.bundleOf
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -29,9 +31,10 @@ class WorkoutDetailsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var player: ExoPlayer? = null
-    private var currentUrl: String? = null
 
-    private var isBuffering = false
+    private var currentUrl: String? = null
+    private var playbackPosition = 0L
+    private var playWhenReady = true
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,123 +46,183 @@ class WorkoutDetailsFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
-        val id = requireArguments().getInt("id")
+        super.onViewCreated(view, savedInstanceState)
 
         setupPlayer()
+        setupClicks()
         observeState()
 
-        viewModel.load(id)
+        viewModel.load(requireArguments().getInt("id"))
+    }
 
-        binding.fullscreenBtn.setOnClickListener {
-            val newState = !(viewModel.state.value.isFullscreen)
-            viewModel.setFullscreen(newState)
+    private fun setupClicks() {
+
+        binding.fullscreenButton.setOnClickListener {
+            viewModel.setFullscreen(!viewModel.state.value.isFullscreen)
         }
+    }
 
-        binding.qualityBtn.setOnClickListener {
-            showQualityMenu()
+    private fun setupPlayer() {
+
+        player = ExoPlayer.Builder(requireContext()).build().also { exoPlayer ->
+
+            binding.playerView.player = exoPlayer
+
+            exoPlayer.addListener(object : Player.Listener {
+
+                override fun onPlaybackStateChanged(state: Int) {
+
+                    binding.playerLoading.isVisible =
+                        state == Player.STATE_BUFFERING
+                }
+            })
         }
     }
 
     private fun observeState() {
+
         viewLifecycleOwner.lifecycleScope.launch {
+
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.state.collect { state ->
-                    render(state)
-                }
+
+                viewModel.state.collect(::render)
             }
         }
     }
 
     private fun render(state: WorkoutDetailsUiState) {
 
-        binding.progressBar.isVisible = state.isBuffering
+        binding.loadingContainer.isVisible = state.isLoading
 
-        binding.title.text = state.workout?.title.orEmpty()
-        binding.description.text = state.workout?.description.orEmpty()
-        binding.meta.text =
-            "${state.workout?.type} • ${state.workout?.duration}"
+        binding.errorView.isVisible = state.error != null
 
-        // fullscreen
-        if (state.isFullscreen) enterFullscreen() else exitFullscreen()
+        binding.contentContainer.isVisible =
+            !state.isLoading &&
+                    state.error == null &&
+                    !state.isFullscreen
 
-        // video update
-        state.videoUrl?.let { url ->
-            if (url != currentUrl) {
-                currentUrl = url
-                play(url)
-            }
-        }
+        binding.playerView.isVisible =
+            !state.isLoading &&
+                    state.error == null
 
         if (state.error != null) {
-            binding.title.text = "Error: ${state.error.message}"
+            binding.errorView.text = state.error.localizedMessage
+            return
         }
-    }
 
-    private fun setupPlayer() {
-        player = ExoPlayer.Builder(requireContext()).build()
-        binding.playerView.player = player
+        state.workout?.let {
 
-        player?.addListener(object : Player.Listener {
+            binding.title.text = it.title
 
-            override fun onPlaybackStateChanged(state: Int) {
-                when (state) {
+            binding.description.text =
+                it.description.orEmpty()
 
-                    Player.STATE_BUFFERING -> {
-                        updateBuffering(true)
-                    }
+            binding.meta.text =
+                "${it.type} • ${it.duration}"
+        }
 
-                    Player.STATE_READY -> {
-                        updateBuffering(false)
-                    }
+        if (state.videoUrl != null && state.videoUrl != currentUrl) {
 
-                    Player.STATE_ENDED -> {
-                        updateBuffering(false)
-                    }
+            currentUrl = state.videoUrl
 
-                    Player.STATE_IDLE -> Unit
-                }
-            }
-        })
-    }
+            play(state.videoUrl)
+        }
 
-    private fun updateBuffering(show: Boolean) {
-        isBuffering = show
-        binding.progressBar.isVisible = show
+        if (state.isFullscreen) {
+            enterFullscreen()
+        } else {
+            exitFullscreen()
+        }
     }
 
     private fun play(url: String) {
-        val item = MediaItem.fromUri(url)
 
         player?.apply {
-            setMediaItem(item)
+
+            setMediaItem(MediaItem.fromUri(url))
+
             prepare()
-            playWhenReady = true
+
+            seekTo(playbackPosition)
+
+            this.playWhenReady =
+                this@WorkoutDetailsFragment.playWhenReady
         }
     }
 
     private fun enterFullscreen() {
-        WindowCompat.setDecorFitsSystemWindows(requireActivity().window, false)
 
-        binding.playerView.layoutParams.height =
-            ViewGroup.LayoutParams.MATCH_PARENT
+        WindowCompat.setDecorFitsSystemWindows(
+            requireActivity().window,
+            false
+        )
+
+        WindowInsetsControllerCompat(
+            requireActivity().window,
+            binding.root
+        ).hide(WindowInsetsCompat.Type.systemBars())
+
+        binding.playerView.updateLayoutParams<ConstraintLayout.LayoutParams> {
+
+            width = ConstraintLayout.LayoutParams.MATCH_PARENT
+            height = ConstraintLayout.LayoutParams.MATCH_PARENT
+
+            dimensionRatio = null
+        }
     }
 
     private fun exitFullscreen() {
-        WindowCompat.setDecorFitsSystemWindows(requireActivity().window, true)
 
-        binding.playerView.layoutParams.height =
-            resources.displayMetrics.density.times(220).toInt()
+        WindowCompat.setDecorFitsSystemWindows(
+            requireActivity().window,
+            true
+        )
+
+        WindowInsetsControllerCompat(
+            requireActivity().window,
+            binding.root
+        ).show(WindowInsetsCompat.Type.systemBars())
+
+        binding.playerView.updateLayoutParams<ConstraintLayout.LayoutParams> {
+
+            width = ConstraintLayout.LayoutParams.MATCH_PARENT
+            height = 0
+
+            dimensionRatio = "16:9"
+        }
     }
 
-    private fun showQualityMenu() {
-        val qualities = arrayOf("LOW", "MEDIUM", "HIGH")
+    override fun onStart() {
+        super.onStart()
+        player?.playWhenReady = playWhenReady
+    }
 
-        AlertDialog.Builder(requireContext())
-            .setItems(qualities) { _, which ->
-                val q = Quality.values()[which]
-                viewModel.changeQuality(q)
-            }
-            .show()
+    override fun onStop() {
+
+        playbackPosition =
+            player?.currentPosition ?: 0
+
+        playWhenReady =
+            player?.playWhenReady ?: true
+
+        player?.pause()
+
+        super.onStop()
+    }
+
+    override fun onDestroyView() {
+
+        playbackPosition =
+            player?.currentPosition ?: 0
+
+        playWhenReady =
+            player?.playWhenReady ?: true
+
+        player?.release()
+        player = null
+
+        _binding = null
+
+        super.onDestroyView()
     }
 }
